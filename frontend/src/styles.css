@@ -64,7 +64,7 @@ select {
 }
 
 .dashboard-shell {
-  width: min(1400px, calc(100% - 28px));
+  width: min(1520px, calc(100% - 24px));
   margin: 0 auto;
   padding: 24px 0 40px;
 }
@@ -138,8 +138,8 @@ select {
 
 .workspace-grid {
   display: grid;
-  grid-template-columns: 430px 1fr;
-  gap: 20px;
+  grid-template-columns: 400px minmax(0, 1fr);
+  gap: 18px;
   margin-top: 20px;
 }
 
@@ -258,32 +258,72 @@ select {
 }
 
 .table-wrap {
-  overflow-x: auto;
+  overflow-x: visible;
 }
 
 .queue-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 760px;
+  table-layout: fixed;
 }
 
 .queue-table th {
   text-align: left;
-  padding: 12px 14px;
+  padding: 10px 8px;
   color: var(--text-soft);
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  white-space: normal;
 }
 
 .queue-table td {
-  padding: 14px;
+  padding: 12px 8px;
   border-top: 1px solid var(--panel-border);
   color: var(--text-main);
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+  vertical-align: middle;
 }
 
 .queue-table tbody tr {
   background: var(--table-row);
+}
+
+.queue-table th:nth-child(1),
+.queue-table td:nth-child(1) {
+  width: 92px;
+}
+
+.queue-table th:nth-child(2),
+.queue-table td:nth-child(2),
+.queue-table th:nth-child(3),
+.queue-table td:nth-child(3),
+.queue-table th:nth-child(4),
+.queue-table td:nth-child(4),
+.queue-table th:nth-child(5),
+.queue-table td:nth-child(5),
+.queue-table th:nth-child(6),
+.queue-table td:nth-child(6),
+.queue-table th:nth-child(7),
+.queue-table td:nth-child(7) {
+  width: 56px;
+}
+
+.queue-table th:nth-child(8),
+.queue-table td:nth-child(8),
+.queue-table th:nth-child(9),
+.queue-table td:nth-child(9),
+.queue-table th:nth-child(10),
+.queue-table td:nth-child(10),
+.queue-table th:nth-child(11),
+.queue-table td:nth-child(11) {
+  width: 102px;
+}
+
+.queue-table th:nth-child(12),
+.queue-table td:nth-child(12) {
+  width: 92px;
 }
 
 .priority-row.critical {
@@ -322,10 +362,10 @@ select {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 92px;
-  padding: 7px 12px;
+  min-width: 78px;
+  padding: 6px 10px;
   border-radius: 999px;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
@@ -377,15 +417,19 @@ select {
 
 .row-actions {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
 }
 
 .table-action {
   border: none;
   border-radius: 999px;
-  padding: 8px 12px;
+  width: 100%;
+  padding: 6px 10px;
   cursor: pointer;
   font-weight: 600;
+  font-size: 0.8rem;
 }
 
 .table-action.admit {
@@ -412,9 +456,9 @@ select {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 10px;
+  padding: 6px 9px;
   border-radius: 999px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 

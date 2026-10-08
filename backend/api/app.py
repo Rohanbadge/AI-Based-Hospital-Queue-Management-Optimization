@@ -20,6 +20,7 @@ from backend.utils.ml_utils import (
     build_rf_frame,
     ensure_numeric_types,
     load_preprocessor_bundle,
+    select_rf_features,
     transform_for_autoencoder,
 )
 
@@ -74,7 +75,8 @@ def compute_scores(frame: pd.DataFrame) -> tuple[np.ndarray, np.ndarray, np.ndar
     anomaly_scores = np.mean(np.square(ae_matrix - reconstructed), axis=1)
 
     rf_frame = build_rf_frame(frame, anomaly_scores, preprocessor_bundle)
-    predicted_triage = random_forest.predict(rf_frame)
+    selected_rf_frame = select_rf_features(rf_frame, preprocessor_bundle)
+    predicted_triage = random_forest.predict(selected_rf_frame)
     priority_scores = predicted_triage + anomaly_scores
 
     return anomaly_scores, predicted_triage, priority_scores
@@ -88,6 +90,66 @@ def triage_to_priority_label(triage_level: int) -> str:
         0: "Low",
     }
     return priority_map.get(int(triage_level), "Low")
+
+
+def to_float(value, fallback: float = 0.0) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return fallback
+
+
+def clinical_rule_triage_level(patient: dict) -> int:
+    age = to_float(patient.get("age"))
+    heart_rate = to_float(patient.get("heart_rate"))
+    systolic_bp = to_float(patient.get("systolic_blood_pressure"))
+    oxygen_sat = to_float(patient.get("oxygen_saturation"))
+    body_temp = to_float(patient.get("body_temperature"))
+    pain = to_float(patient.get("pain_level"))
+    chronic_count = to_float(patient.get("chronic_disease_count"))
+
+    severe = (
+        oxygen_sat < 90
+        or heart_rate < 45
+        or heart_rate > 130
+        or systolic_bp < 90
+        or systolic_bp > 200
+        or body_temp < 35
+        or body_temp >= 39.5
+        or pain >= 9
+    )
+    if severe:
+        return 3
+
+    moderate = (
+        oxygen_sat < 94
+        or heart_rate < 55
+        or heart_rate > 110
+        or systolic_bp < 100
+        or systolic_bp > 180
+        or body_temp < 35.5
+        or body_temp >= 38.5
+        or pain >= 7
+        or chronic_count >= 3
+    )
+    if moderate:
+        return 2
+
+    mild = (
+        oxygen_sat < 96
+        or heart_rate < 60
+        or heart_rate > 100
+        or systolic_bp < 110
+        or systolic_bp > 160
+        or body_temp >= 38
+        or pain >= 4
+        or chronic_count >= 1
+        or age >= 70
+    )
+    if mild:
+        return 1
+
+    return 0
 
 
 def normalize_payload(payload: dict) -> dict:
@@ -229,11 +291,13 @@ def optimize_queue():
         predicted_triage,
         priority_scores,
     ):
+        final_triage_level = clinical_rule_triage_level(patient)
+
         updated_queue.append(
             {
                 **patient,
-                "predicted_triage": int(triage_level),
-                "priority_label": triage_to_priority_label(int(triage_level)),
+                "predicted_triage": final_triage_level,
+                "priority_label": triage_to_priority_label(final_triage_level),
                 "anomaly_score": int(round(float(anomaly_score) * 100)),
                 "priority_score": int(round(float(priority_score) * 100)),
             }
